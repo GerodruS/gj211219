@@ -15,6 +15,14 @@ function _init()
  min_floor=1
  max_floor=3
  first_floor_pos={33,113}
+ floor_size={8,8}
+ 
+ queues={}
+ for i=min_floor,max_floor do
+  queues[i]=0
+ end
+ gen_delay=1
+ next_gen=rnd(gen_delay)+1
 end
 
 function _update60()
@@ -42,6 +50,13 @@ function _update60()
    end
   end
  end
+ 
+ next_gen-=1/60
+ if next_gen<0 then
+  next_gen+=rnd(gen_delay)+1
+  local floor=min_floor+flr(rnd(max_floor-min_floor+1))
+  queues[floor]+=1
+ end
 end
 
 function _draw()
@@ -58,7 +73,7 @@ function _draw()
  draw_rhythm()
  
  local x=first_floor_pos[1]
- local y=-(current_floor-1)*8+first_floor_pos[2]
+ local y=-(current_floor-1)*floor_size[2]+first_floor_pos[2]
  
  
  spr(4,x-1,y-1)
@@ -69,6 +84,15 @@ function _draw()
 -- color(3)
 -- print(x)
 -- print(y)
+ 
+ local x=first_floor_pos[1]+floor_size[1]
+ for i=min_floor,max_floor do
+  local y=first_floor_pos[2]-floor_size[2]*(i-1)
+  for j=1,queues[i] do
+   local dx=x+floor_size[1]*(j-1)
+   rectfill(dx,y,dx+1,y+1,7) 
+  end
+ end
 end
 -->8
 function draw_rhythm()
