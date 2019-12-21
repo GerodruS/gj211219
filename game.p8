@@ -10,6 +10,7 @@ function _init()
  init_rhythm()
  init_elevator()
  init_queues()
+ init_score()
 end
 
 function _update60()
@@ -23,7 +24,7 @@ function _draw()
  cls()
  map(0,0,0,0,16,16)
  
- if succes then
+ if success then
   color(11)
  else
   color(8)
@@ -31,6 +32,7 @@ function _draw()
  draw_rhythm() 
  draw_elevator()
  draw_queues()
+ draw_score()
 end
 -->8
 -- rhythm
@@ -59,7 +61,7 @@ function draw_rhythm()
  end
 end
 -->8
---elevator and floors
+-- elevator and floors
 function init_elevator()
  min_floor=1
  max_floor=3
@@ -67,6 +69,8 @@ function init_elevator()
  floor_size={8,8}
  
  current_floor=1
+ elevator_content=0
+ max_elvtr_content=9
 end
 
 function update_elevator()
@@ -78,16 +82,34 @@ function update_elevator()
  if (btnp(⬆️)) dp[2]+=1
  if (btnp(⬇️)) dp[2]-=1
  
- if dp[1]~=0 or dp[2]~=0 then
-  succes=t<gap or period-gap<t
-  if succes then
+ if dp[2]~=0 then
+  success=t<gap or period-gap<t
+  if success then
    current_floor+=dp[2]
    if current_floor<min_floor then
     current_floor=min_floor
-    succes=false
+    success=false
    elseif max_floor<current_floor then
     current_floor=max_floor
-    succes=false
+    success=false
+   end
+  end
+ elseif dp[1]~=0 then
+  success=t<gap or period-gap<t
+  if success then
+   if dp[1]<0 then
+    success=0<queues[current_floor]and
+            elevator_content<max_elvtr_content   
+    if success then
+     queues[current_floor]-=1
+     elevator_content+=1
+    end
+   else
+    success=0<elevator_content
+    if success then
+     elevator_content-=1
+     delivary_completed()
+    end
    end
   end
  end
@@ -98,10 +120,15 @@ function draw_elevator()
  local y=-(current_floor-1)*floor_size[2]+first_floor_pos[2]
  spr(4,x-1,y-1)
 -- rectfill(x-1,y+1,x+1,y-1)
+ for i=0,elevator_content-1 do
+  local xx=x+(i%3)*2
+  local yy=y+flr(i/3)*2
+  rectfill(xx,yy,xx+1,yy+1,3)
+ end
 end
 
 -->8
---queues
+-- queues
 function init_queues()
  queues={}
  for i=min_floor,max_floor do
@@ -109,7 +136,7 @@ function init_queues()
  end
  gen_delay=1
  next_gen=rnd(gen_delay)+1
- max_queue=3
+ max_queue=5
 end
 
 function update_queues()
@@ -134,6 +161,19 @@ function draw_queues()
    rectfill(dx,y,dx+1,y+1,7) 
   end
  end
+end
+-->8
+-- score
+function init_score()
+ score=0
+end
+
+function draw_score()
+ print('scpre: '..score)
+end
+
+function delivary_completed()
+ score+=100
 end
 __gfx__
 00000000777777777777777777777777777777770000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
