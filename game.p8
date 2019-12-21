@@ -6,14 +6,70 @@ __lua__
 --  by @gruber_music / @krajzeg
 
 function _init()
- music(18)
+-- music(18)
+ frame=0
+ period=40/60
+ gap=8/60
+ position={64,64}
 end
 
 function _update60()
+ local t=time()%period
+-- local can_do=t<gap or period-gap<t
+-- if btnp(❎) then
+-- end
+ 
+ local dp={0,0}
+ if (btnp(⬅️)) dp[1]-=1
+ if (btnp(➡️)) dp[1]+=1
+ if (btnp(⬆️)) dp[2]-=1
+ if (btnp(⬇️)) dp[2]+=1
+ 
+ if dp[1]~=0 or dp[2]~=0 then
+  succes=t<gap or period-gap<t
+  if succes then
+   position[1]+=dp[1]
+   position[2]+=dp[2]
+  end
+ end
 end
 
 function _draw()
+ local t=time()%period
+ 
  cls()
+ if succes then
+  color(11)
+ else
+  color(8)
+ end
+ draw_rhythm()
+ 
+ local x=position[1]
+ local y=position[2]
+ rectfill(x-1,y+1,x+1,y-1) 
+-- print(press_time)
+-- printh(frm, 'log.txt')
+end
+-->8
+function draw_rhythm()
+ local t=time()%period
+ 
+ if t<gap or period-gap<t then
+  rectfill(62,127,66,127-7)
+ elseif period-gap*2<t then
+  rectfill(62,127,66,127-3)
+ else
+  rectfill(62,127,66,127-5)
+ end
+ 
+ for i=1,3 do  
+  local dx=(t-period*i)*30
+  local x=64-dx
+  rectfill(x,127,x,127-2,7)  
+  local x=65+dx
+  rectfill(x,127,x,127-2,7)
+ end
 end
 __sfx__
 010f000005135051050c00005135091351c0150c1351d0150a1351501516015021350713500000051350000003135031350013500000021351b015031351a0150513504135000000713505135037153c7001b725
