@@ -1,35 +1,76 @@
 pico-8 cartridge // http://www.pico-8.com
 version 18
 __lua__
+-- main
 -- music: "space"
 --  from pico-8 tunes vol. 1
 --  by @gruber_music / @krajzeg
-
 function _init()
 -- music(18)
- frame=0
+ init_rhythm()
+ init_elevator()
+ init_queues()
+end
+
+function _update60()
+ update_elevator() 
+ update_queues()
+end
+
+function _draw()
+ local t=time()%period
+ 
+ cls()
+ map(0,0,0,0,16,16)
+ 
+ if succes then
+  color(11)
+ else
+  color(8)
+ end
+ draw_rhythm() 
+ draw_elevator()
+ draw_queues()
+end
+-->8
+-- rhythm
+function init_rhythm()
  period=40/60
  gap=8/60
- position={64,64}
- current_floor=1
+end
+
+function draw_rhythm()
+ local t=time()%period
+ 
+ if t<gap or period-gap<t then
+  rectfill(62,127,66,127-7)
+ elseif period-gap*2<t then
+  rectfill(62,127,66,127-3)
+ else
+  rectfill(62,127,66,127-5)
+ end
+ 
+ for i=1,3 do  
+  local dx=(t-period*i)*30
+  local x=64-dx
+  rectfill(x,127,x,127-2,7)  
+  local x=65+dx
+  rectfill(x,127,x,127-2,7)
+ end
+end
+-->8
+--elevator and floors
+function init_elevator()
  min_floor=1
  max_floor=3
  first_floor_pos={33,113}
  floor_size={8,8}
  
- queues={}
- for i=min_floor,max_floor do
-  queues[i]=0
- end
- gen_delay=1
- next_gen=rnd(gen_delay)+1
+ current_floor=1
 end
 
-function _update60()
+function update_elevator()
  local t=time()%period
--- local can_do=t<gap or period-gap<t
--- if btnp(❎) then
--- end
  
  local dp={0,0}
  if (btnp(⬅️)) dp[1]-=1
@@ -50,41 +91,41 @@ function _update60()
    end
   end
  end
- 
+end
+
+function draw_elevator()
+ local x=first_floor_pos[1]
+ local y=-(current_floor-1)*floor_size[2]+first_floor_pos[2]
+ spr(4,x-1,y-1)
+-- rectfill(x-1,y+1,x+1,y-1)
+end
+
+-->8
+--queues
+function init_queues()
+ queues={}
+ for i=min_floor,max_floor do
+  queues[i]=0
+ end
+ gen_delay=1
+ next_gen=rnd(gen_delay)+1
+ max_queue=3
+end
+
+function update_queues()
  next_gen-=1/60
  if next_gen<0 then
   next_gen+=rnd(gen_delay)+1
   local floor=min_floor+flr(rnd(max_floor-min_floor+1))
-  queues[floor]+=1
+  if queues[floor]<max_queue then
+   queues[floor]+=1
+  else
+   game_over()
+  end  
  end
 end
 
-function _draw()
- local t=time()%period
- 
- cls()
- map(0,0,0,0,16,16)
- 
- if succes then
-  color(11)
- else
-  color(8)
- end
- draw_rhythm()
- 
- local x=first_floor_pos[1]
- local y=-(current_floor-1)*floor_size[2]+first_floor_pos[2]
- 
- 
- spr(4,x-1,y-1)
- rectfill(x-1,y+1,x+1,y-1) 
--- print(press_time)
--- printh(frm, 'log.txt')
-
--- color(3)
--- print(x)
--- print(y)
- 
+function draw_queues()
  local x=first_floor_pos[1]+floor_size[1]
  for i=min_floor,max_floor do
   local y=first_floor_pos[2]-floor_size[2]*(i-1)
@@ -92,26 +133,6 @@ function _draw()
    local dx=x+floor_size[1]*(j-1)
    rectfill(dx,y,dx+1,y+1,7) 
   end
- end
-end
--->8
-function draw_rhythm()
- local t=time()%period
- 
- if t<gap or period-gap<t then
-  rectfill(62,127,66,127-7)
- elseif period-gap*2<t then
-  rectfill(62,127,66,127-3)
- else
-  rectfill(62,127,66,127-5)
- end
- 
- for i=1,3 do  
-  local dx=(t-period*i)*30
-  local x=64-dx
-  rectfill(x,127,x,127-2,7)  
-  local x=65+dx
-  rectfill(x,127,x,127-2,7)
  end
 end
 __gfx__
@@ -155,7 +176,7 @@ __map__
 0000000011000000000000130000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 0000000011000000000000130000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 0000000021222222222222230000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-2100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+2100000000000000000000000000002300000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 __sfx__
 010f000005135051050c00005135091351c0150c1351d0150a1351501516015021350713500000051350000003135031350013500000021351b015031351a0150513504135000000713505135037153c7001b725
 010f00000c03300000300152401524615200150c013210150c003190151a01500000246153c70029515295150c0332e5052e5150c60524615225150000022515297172b71529014297152461535015295151d015
