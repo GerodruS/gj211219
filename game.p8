@@ -7,32 +7,7 @@ __lua__
 --  by @gruber_music / @krajzeg
 function _init()
 -- music(18)
- init_rhythm()
- init_elevator()
- init_queues()
- init_score()
-end
-
-function _update60()
- update_elevator() 
- update_queues()
-end
-
-function _draw()
- local t=time()%period
- 
- cls()
- map(0,0,0,0,16,16)
- 
- if success then
-  color(11)
- else
-  color(8)
- end
- draw_rhythm() 
- draw_elevator()
- draw_queues()
- draw_score()
+ init_game_state()
 end
 -->8
 -- rhythm
@@ -119,7 +94,6 @@ function draw_elevator()
  local x=first_floor_pos[1]
  local y=-(current_floor-1)*floor_size[2]+first_floor_pos[2]
  spr(4,x-1,y-1)
--- rectfill(x-1,y+1,x+1,y-1)
  for i=0,elevator_content-1 do
   local xx=x+(i%3)*2
   local yy=y+flr(i/3)*2
@@ -147,7 +121,7 @@ function update_queues()
   if queues[floor]<max_queue then
    queues[floor]+=1
   else
-   game_over()
+   init_game_over_state()
   end  
  end
 end
@@ -174,6 +148,53 @@ end
 
 function delivary_completed()
  score+=100
+end
+-->8
+-- game state
+function init_game_state()
+ init_rhythm()
+ init_elevator()
+ init_queues()
+ init_score()
+ 
+ _update60=update_game_state
+ _draw=draw_game_state
+end
+
+function update_game_state()
+ update_elevator() 
+ update_queues()
+end
+
+function draw_game_state()
+ local t=time()%period
+ 
+ cls()
+ map(0,0,0,0,16,16)
+ 
+ if success then
+  color(11)
+ else
+  color(8)
+ end
+ draw_rhythm() 
+ draw_elevator()
+ draw_queues()
+ draw_score()
+end
+
+-->8
+-- game over state
+function init_game_over_state() 
+ _update60=update_game_over_state
+ _draw=draw_game_over_state
+end
+
+function update_game_over_state()
+end
+
+function draw_game_over_state()
+ draw_game_state()
 end
 __gfx__
 00000000777777777777777777777777777777770000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
