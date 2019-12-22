@@ -31,6 +31,7 @@ end
 
 function init_rhythm()
  music(18, 100)
+ success=true
 end
 
 function draw_rhythm()
@@ -135,7 +136,10 @@ function update_elevator()
     end
    end
   end
-  if (not success) sfx(3,3)
+  if not success then
+   sfx(3,3)
+   reset_multiplier()
+  end
  end
 end
 
@@ -263,7 +267,28 @@ function draw_queues()
 end
 -->8
 -- score
+function reset_multiplier()
+ multiplier=1
+ sub_mul=1
+end
+
+function increase_mul()
+ if multiplier==sub_mul then
+  multiplier+=1
+  sub_mul=1
+ else
+  sub_mul+=1
+ end
+end
+
+function delivery_completed()
+ score+=1*multiplier
+ sfx(2,3)
+ increase_mul()
+end
+
 function init_score()
+ reset_multiplier()
  score=0
 end
 
@@ -271,12 +296,9 @@ function draw_score(x,y)
  color(9)
  x=x or 1
  y=y or 1
- print('score: '..score,x,y)
-end
-
-function delivery_completed()
- score+=100
- sfx(2,3)
+ print('score: '..score
+  ..' multiplier:'..multiplier
+  ,x,y)
 end
 -->8
 -- game state
