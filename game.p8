@@ -12,7 +12,7 @@ end
 -- rhythm
 local period=80
 local gap=0.2
- 
+
 local function get_progress()
  local ticks=stat(26)
  return (ticks%period)/period
@@ -53,8 +53,6 @@ function draw_rhythm()
 end
 -->8
 -- elevator and floors
-local passengers={0,0,0,0,0,0,0,0,0}
-
 local function has_space()
  return passengers[9]==0
 end
@@ -86,7 +84,8 @@ function init_elevator()
  max_floor=9
  first_floor_pos={33+8*6,113-2*8}
  floor_size={-8,8}
- 
+
+ passengers={0,0,0,0,0,0,0,0,0} 
  current_floor=1
 end
 
@@ -175,18 +174,6 @@ end
 
 -->8
 -- queues
-local queues={
- {0,0,0,0,0},
- {0,0,0,0,0},
- {0,0,0,0,0},
- {0,0,0,0,0},
- {0,0,0,0,0},
- {0,0,0,0,0},
- {0,0,0,0,0},
- {0,0,0,0,0},
- {0,0,0,0,0},
-}
-
 local function get_destination(floor)
  local skip= (1<floor and floor<9) and 3 or 2
  local n=9-skip
@@ -213,6 +200,17 @@ function init_queues()
  gen_delay=1
  next_gen=rnd(gen_delay)+1
  max_queue=5
+ queues={
+	 {0,0,0,0,0},
+	 {0,0,0,0,0},
+	 {0,0,0,0,0},
+	 {0,0,0,0,0},
+	 {0,0,0,0,0},
+	 {0,0,0,0,0},
+	 {0,0,0,0,0},
+	 {0,0,0,0,0},
+	 {0,0,0,0,0},
+	}
 end
 
 function update_queues()
@@ -254,8 +252,10 @@ function init_score()
  score=0
 end
 
-function draw_score()
- print('score: '..score,1,1)
+function draw_score(x,y)
+ x=x or 1
+ y=y or 1
+ print('score: '..score,x,y)
 end
 
 function delivery_completed()
@@ -303,10 +303,21 @@ function init_game_over_state()
 end
 
 function update_game_over_state()
+ if btnp(❎) then
+  init_game_state()
+ end
 end
 
 function draw_game_over_state()
  draw_game_state()
+ 
+ local x=37
+ local y=54
+ rectfill(x,y,x+54,y+22,4)
+ color(7)
+ print('game over',x+2,y+2)
+ draw_score(x+2,y+9)
+ print('❎ to restart',x+2,y+16)
 end
 __gfx__
 00000000777777777777777777777777777777770000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
