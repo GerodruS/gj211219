@@ -55,15 +55,39 @@ end
 -- elevator and floors
 local passengers={0,0,0,0,0,0,0,0,0}
 
+local function has_space()
+ return passengers[9]==0
+end
+
+local function add_p(floor)
+ for i=1,9 do
+  if passengers[i]==0 then
+   passengers[i]=floor
+   return
+  end
+ end
+end
+
+local function del_p(floor)
+ for i=1,9 do
+  if passengers[i]==floor then
+   for j=i,8 do
+    passengers[j]=passengers[j+1]
+   end
+   passengers[9]=0
+   return true
+  end
+ end
+ return false
+end
+
 function init_elevator()
  min_floor=1
- max_floor=3
+ max_floor=9
  first_floor_pos={33,113}
  floor_size={8,8}
  
  current_floor=1
- elevator_content=0
- max_elvtr_content=9
 end
 
 function update_elevator()
@@ -91,17 +115,16 @@ function update_elevator()
   success=can_move
   if success then
    if dp[1]<0 then
-    success=0<queues[current_floor]and
-            elevator_content<max_elvtr_content   
+    success=has_space()
     if success then
-     queues[current_floor]-=1
-     elevator_content+=1
+     local d=dequeue(current_floor)
+     success=d~=nil
+     if (success) add_p(d)
     end
    else
-    success=0<elevator_content
+    success=del_p(current_floor)
     if success then
-     elevator_content-=1
-     delivary_completed()
+     delivery_completed()
     end
    end
   end
@@ -112,31 +135,65 @@ function draw_elevator()
  local x=first_floor_pos[1]
  local y=-(current_floor-1)*floor_size[2]+first_floor_pos[2]
  spr(4,x-1,y-1)
- for i=0,elevator_content-1 do
-  local xx=x+(i%3)*2
-  local yy=y+flr(i/3)*2
-  rectfill(xx,yy,xx+1,yy+1,3)
- end
  
  color(7)
  print('elevator',93,10)
+ 
+ local count=0
  for i=0,8 do
   local p=passengers[i+1]
   if p~=0 then
    local x=12*8+8*(i%3)+3
    local y=2*8+8*flr(i/3)+2
    print(p,x,y)
+   count+=1
   end
+ end
+
+ for i=0,count-1 do
+  local xx=x+(i%3)*2
+  local yy=y+flr(i/3)*2
+  rectfill(xx,yy,xx+1,yy+1,3)
  end
 end
 
 -->8
 -- queues
-function init_queues()
- queues={}
- for i=min_floor,max_floor do
-  queues[i]=0
+local queues={
+ {0,0,0,0,0},
+ {0,0,0,0,0},
+ {0,0,0,0,0},
+ {0,0,0,0,0},
+ {0,0,0,0,0},
+ {0,0,0,0,0},
+ {0,0,0,0,0},
+ {0,0,0,0,0},
+ {0,0,0,0,0},
+}
+
+local function get_destination(floor)
+ local skip= (1<floor and floor<9) and 3 or 2
+ local n=9-skip
+ n=flr(rnd(n))+1
+ if (floor-1<=n) n+=skip
+ return n
+end
+
+function dequeue(floor)
+ local q=queues[floor]
+ local d=q[1]
+ if d==0 then
+  return nil
+ else
+  for i=1,4 do
+   q[i]=q[i+1]
+  end
+  q[5]=0
+  return d
  end
+end
+
+function init_queues()
  gen_delay=1
  next_gen=rnd(gen_delay)+1
  max_queue=5
@@ -147,8 +204,13 @@ function update_queues()
  if next_gen<0 then
   next_gen+=rnd(gen_delay)+1
   local floor=min_floor+flr(rnd(max_floor-min_floor+1))
-  if queues[floor]<max_queue then
-   queues[floor]+=1
+  if queues[floor][5]==0 then
+   for i=1,5 do
+    if queues[floor][i]==0 then
+     queues[floor][i]=get_destination(floor)
+     break
+    end
+   end
   else
    init_game_over_state()
   end  
@@ -159,9 +221,13 @@ function draw_queues()
  local x=first_floor_pos[1]+floor_size[1]
  for i=min_floor,max_floor do
   local y=first_floor_pos[2]-floor_size[2]*(i-1)
-  for j=1,queues[i] do
-   local dx=x+floor_size[1]*(j-1)
-   rectfill(dx,y,dx+1,y+1,7) 
+  for j=1,5 do
+   local d=queues[i][j]
+   if d~=0 then
+	   local dx=x+floor_size[1]*(j-1)
+--	   rectfill(dx,y,dx+1,y+1,7)
+    print(d,dx,y) 
+   end
   end
  end
 end
@@ -175,7 +241,7 @@ function draw_score()
  print('score: '..score,1,1)
 end
 
-function delivary_completed()
+function delivery_completed()
  score+=100
 end
 -->8
