@@ -6,29 +6,45 @@ __lua__
 --  from pico-8 tunes vol. 1
 --  by @gruber_music / @krajzeg
 function _init()
--- music(18)
  init_game_state()
 end
 -->8
 -- rhythm
+local period=80
+local gap=0.2
+ 
+local function get_progress()
+ local ticks=stat(26)
+ return (ticks%period)/period
+end
+
+function test_rhythm()
+ local p=get_progress()
+ return p<gap or
+        (1-gap)<p
+end
+
+function test_rhythm_2()
+ local p=get_progress()
+ return (1-gap*2)<p
+end
+
 function init_rhythm()
- period=40/60
- gap=8/60
 end
 
 function draw_rhythm()
- local t=time()%period
+ local p=get_progress()
  
- if t<gap or period-gap<t then
+ if test_rhythm() then
   rectfill(62,127,66,127-7)
- elseif period-gap*2<t then
+ elseif test_rhythm_2() then
   rectfill(62,127,66,127-3)
  else
   rectfill(62,127,66,127-5)
  end
  
  for i=1,3 do  
-  local dx=(t-period*i)*30
+  local dx=(p-i)*16
   local x=64-dx
   rectfill(x,127,x,127-2,7)  
   local x=65+dx
@@ -49,7 +65,7 @@ function init_elevator()
 end
 
 function update_elevator()
- local t=time()%period
+ local can_move=test_rhythm()
  
  local dp={0,0}
  if (btnp(⬅️)) dp[1]-=1
@@ -58,7 +74,7 @@ function update_elevator()
  if (btnp(⬇️)) dp[2]-=1
  
  if dp[2]~=0 then
-  success=t<gap or period-gap<t
+  success=can_move
   if success then
    current_floor+=dp[2]
    if current_floor<min_floor then
@@ -70,7 +86,7 @@ function update_elevator()
    end
   end
  elseif dp[1]~=0 then
-  success=t<gap or period-gap<t
+  success=can_move
   if success then
    if dp[1]<0 then
     success=0<queues[current_floor]and
@@ -152,6 +168,7 @@ end
 -->8
 -- game state
 function init_game_state()
+ music(18, 100)
  init_rhythm()
  init_elevator()
  init_queues()
@@ -167,8 +184,6 @@ function update_game_state()
 end
 
 function draw_game_state()
- local t=time()%period
- 
  cls()
  map(0,0,0,0,16,16)
  
@@ -185,7 +200,8 @@ end
 
 -->8
 -- game over state
-function init_game_over_state() 
+function init_game_over_state()
+ music(-1, 100) 
  _update60=update_game_over_state
  _draw=draw_game_over_state
 end
