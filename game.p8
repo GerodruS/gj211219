@@ -11,7 +11,7 @@ end
 -->8
 -- rhythm
 local period=80
-local gap=0.2
+local gap=0.25
 
 local function get_progress()
  local ticks=stat(26)
@@ -30,6 +30,7 @@ function test_rhythm_2()
 end
 
 function init_rhythm()
+ music(18, 100)
 end
 
 function draw_rhythm()
@@ -264,7 +265,6 @@ end
 -->8
 -- game state
 function init_game_state()
- music(18, 100)
  init_rhythm()
  init_elevator()
  init_queues()
